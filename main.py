@@ -94,6 +94,7 @@ while running:
         score_value += 1
         bullet_state = 'ready'
         enemyX, enemyY = random.randint(0, 735), random.randint(25, 150)
+        bulletX, bulletY = playerX, playerY
 
     playerX += playerXchange
     if playerX <= 0:
@@ -109,6 +110,11 @@ while running:
         enemyXchange = -2
         enemyY += enemyYchange
 
+    if enemyY > 400:
+        game_over_font = pygame.font.Font('freesansbold.ttf', 72)
+        game_over_text = game_over_font.render('GAME OVER', True, (255, 255, 255))
+        screen.blit(game_over_text, (220, 230))
+        enemyY = 900
     player(playerX, playerY)
     enemy(enemyX, enemyY)
     show_score(textX, textY)
