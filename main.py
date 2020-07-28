@@ -56,7 +56,6 @@ def level_up():
 def reloading():
     global reload
     reload = True
-    bullets.append(Bullet())
     return magazine + 1
 
 
@@ -67,9 +66,9 @@ class Enemy:
     def __init__(self):
         Enemy.enemy_id += 1
         self.X = random.randint(0, 736)
-        self.Y = random.randint(32, 200)
+        self.Y = random.randint(32, 150)
         self.X_change = 4
-        self.Y_change = 66
+        self.Y_change = 64
         self.id = Enemy.enemy_id
         self.size = 64
 
@@ -144,7 +143,9 @@ class Bullet:
         return f"Bullet ID:- {self.id}"
 
     def show(self, display_object):
-        if self.state == 'fired' and self.Y >= 0:
+        if self.Y <= 0:
+            self.ready()
+        if self.state == 'fired':
             self.Y -= self.Y_change
             display_object.blit(self.img, (self.X, self.Y))
 
@@ -152,21 +153,24 @@ class Bullet:
         self.state = 'fired'
         self.sound.play()
 
+    def ready(self):
+        self.state = 'ready'
+        self.Y = 0
+
 
 reload = False
 score_value = 0
 level_value = 0
 enemies = []
-bullets = []
+magazine = 0
+magazine_size = 8
+bullets = [Bullet() for _ in range(magazine_size)]
 player = Player()
 running = True
-magazine = 0
 while running:
     screen.blit(background, (0, 0))
-    if magazine == 6:
-        reload = False
-    if reload or magazine == 0:
-        magazine = reloading()
+    if magazine == 0:
+        magazine = magazine_size
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -175,17 +179,15 @@ while running:
                 player.move(right=True)
             if event.key == pygame.K_LEFT:
                 player.move(right=False)
-            if event.key == pygame.K_SPACE:
-                magazine -= 1
-                if bullets[magazine].state == 'ready':
-                    bullets[magazine].X = player.X + 16
-                    bullets[magazine].Y = player.Y
+            if event.key == pygame.K_SPACE and magazine > 0:
+                if bullets[magazine-1].state == 'ready':
+                    magazine -= 1
+                    bullets[magazine].X, bullets[magazine].Y = player.X + 16, player.Y
                     bullets[magazine].fired()
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
                 player.stop()
     show_score()
-    magazine_show(magazine)
     if len(enemies) == 0:
         level_up()
     for enemy in enemies:
@@ -198,9 +200,10 @@ while running:
         bullet.show(screen)
         for enemy in enemies:
             if isCollison((enemy.X, enemy.Y, enemy.size), (bullet.X, bullet.Y, bullet.size)):
-                bullets.remove(bullet)
+                bullet.ready()
                 score_value += 1
                 enemies.remove(enemy)
+    magazine_show(len([1 for bullet in bullets if bullet.state == 'ready']))
     clock.tick(60)
     pygame.display.update()
 pygame.quit()
