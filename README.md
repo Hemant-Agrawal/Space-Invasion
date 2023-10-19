@@ -6,3 +6,9 @@ A Space Invasion Game developed in Python
 ## Play 
 Run main.py using python intrepretor or run following command.
 `py main.py`
+
+## Instructions to Play
+Use your Arrow keys to move left or right
+Use your Spacebar to fire bullet
+
+Enjoy Playing!
